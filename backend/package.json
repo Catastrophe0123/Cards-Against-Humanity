@@ -1,0 +1,23 @@
+{
+  "name": "cards-against-humanity",
+  "version": "1.0.0",
+  "description": "cards against humanity clone",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Catastrophe0123/Cards-Against-Humanity.git"
+  },
+  "author": "Navaneeth",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Catastrophe0123/Cards-Against-Humanity/issues"
+  },
+  "homepage": "https://github.com/Catastrophe0123/Cards-Against-Humanity#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1"
+  }
+}
