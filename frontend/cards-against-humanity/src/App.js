@@ -10,9 +10,18 @@ class App extends Component {
 	componentDidMount() {
 		socket.emit('newGame');
 		socket.on('sets', (data) => console.log(data));
+		socket.on('connect', function () {
+			console.log('id : ', socket.id);
+		});
 		socket.on('USERNAME_EXISTS', () => {
 			this.setState({ errors: 'username currently in use' });
 		});
+
+		socket.on('ALREADY_REGISTERED', () => {
+			this.setState({ errors: 'user already registered' });
+			// TODO : redirect to rooms page
+		});
+
 		socket.on('REGISTER_SUCCESS', () => {
 			this.setState({ errors: null });
 			// TODO : redirect to rooms page

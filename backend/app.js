@@ -22,28 +22,43 @@ app.get('/', (req, res) => {
 	res.send({ response: 'I am alive' }).status(200);
 });
 
-const io = socketIo(server); // < Interesting!
+const io = socketIo(server);
 
 io.on('connection', (socket) => {
-	// here you can start emitting events to the client
-	console.log('new client connected');
+	console.log('new client connected : ', socket.id);
 
 	socket.on('registerUser', (username) => {
-		console.log(username);
-		client.sadd(['users', username], function (err, reply) {
+		client.exists(username, function (err, reply) {
 			if (err) {
-				console.log(err);
+				console.error(err);
 			} else {
-				console.log('redis thithg : ', reply);
-				// 1 if inserted successfully
-				// 0 if duplicate value
-				if (reply === 0) {
-					socket.emit('USERNAME_EXISTS');
-				} else {
-					socket.emit('REGISTER_SUCCESS');
-				}
+				// 1 if exists
+				// 0 if not
+
+				client.exists(socket.id, function (err, reply1) {
+					if (err) {
+						console.error(err);
+					} else {
+						if (reply1 === 1) {
+							socket.emit('ALREADY_REGISTERED');
+							return;
+						} else {
+							if (reply === 1) {
+								socket.emit('USERNAME_EXISTS');
+							} else {
+								client.set(socket.id, username);
+								client.set(username, socket.id);
+								socket.emit('REGISTER_SUCCESS');
+							}
+						}
+					}
+				});
 			}
 		});
+
+		// client.set(username, socket.id);
+
+		// HOLUP
 
 		// REMOVING VALUES
 		// client.srem('users', 'nava', function (err, reply) {
@@ -53,15 +68,6 @@ io.on('connection', (socket) => {
 		// 		console.log('removed nava : ', reply);
 		// 	}
 		// });
-
-		// FETCHING VALUES
-		client.smembers('users', function (err, reply) {
-			if (err) {
-				console.error(err);
-			} else {
-				console.log('all values stored in this : ', reply);
-			}
-		});
 	});
 
 	socket.on('newGame', async () => {
@@ -72,7 +78,30 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('disconnect', () => {
-		console.log('Client disconnected');
+		console.log('Client disconnected : ', socket.id);
+		// TODO: remove user from redis
+		let username = '';
+		client.get(socket.id, function (err, reply) {
+			if (err) {
+				console.error(err);
+			} else {
+				console.log(reply);
+				username = reply;
+				if (reply === null) return;
+				client.del(username, function (err, reply) {
+					if (err) {
+						console.error(err);
+					} else {
+					}
+				});
+			}
+		});
+		client.del(socket.id, function (err, reply) {
+			if (err) {
+				console.error(err);
+			} else {
+			}
+		});
 	});
 });
 
